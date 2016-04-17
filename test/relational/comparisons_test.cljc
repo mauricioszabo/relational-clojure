@@ -5,8 +5,20 @@
             [relational.core :refer [to-pseudo-sql]]))
 
 (deftest comparisons
-  (testing "equality and difference comparisons"
-    (let [foo (s/attribute "foo" "foo")
-          bar (s/attribute "foo" "bar")]
-      (is (= "`foo`.`bar` = 'quox'" (to-pseudo-sql (c/comparison "=" bar "quox") {:adapter :mysql})))
-      (is (= "`foo`.`foo` = `foo`.`bar`" (to-pseudo-sql (c/comparison "=" foo bar) {:adapter :mysql}))))))
+  (let [sql #(to-pseudo-sql % {:adapter :mysql})
+        foo (s/attribute "foo" "foo")
+        bar (s/attribute "foo" "bar")]
+
+    (testing "equality and difference comparisons"
+      (is (= "`foo`.`bar` = 'quox'" (sql (c/comparison "=" bar "quox"))))
+      (is (= "`foo`.`foo` = `foo`.`bar`" (sql (c/comparison "=" foo bar))))
+      (is (= "`foo`.`foo` != `foo`.`bar`" (sql (c/comparison "!=" foo bar)))))
+
+    (testing "comparission with nil"
+      (is (= "`foo`.`bar` IS NULL" (sql (c/is-null bar))))
+      (is (= "`foo`.`bar` IS NOT NULL" (sql (c/is-not-null bar)))))
+
+    (testing "comparision with multiple arity"
+      (is (nil? (c/comparison "=")))
+      (is (= "`foo`.`foo` = `foo`.`bar` AND `foo`.`bar` = 'quox'"
+             (sql (c/comparison "=" foo bar "quox")))))))

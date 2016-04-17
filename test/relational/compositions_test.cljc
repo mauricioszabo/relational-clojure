@@ -6,27 +6,31 @@
             [relational.compositions :as cmp]))
 
 (deftest compositions
-  (let [my-db {:adapter :mysql}
+  (let [sql #(core/to-pseudo-sql % {:adapter :mysql})
         attr (attr/attribute "foo" "bar")
         eqa (c/comparison "=" attr "aaa")
         eqb (c/comparison "=" attr "bbb")]
 
     (testing "composing with OR"
       (is (= "(`foo`.`bar` = 'aaa')"
-             (core/to-pseudo-sql (cmp/compose "OR" eqa) my-db)))
+             (sql (cmp/compose "OR" eqa))))
       (is (= "(`foo`.`bar` = 'aaa' OR `foo`.`bar` = 'bbb')"
-             (core/to-pseudo-sql (cmp/compose "OR" eqa eqb) my-db)))
+             (sql (cmp/compose "OR" eqa eqb))))
       (is (= "(`foo`.`bar` = 'aaa' OR `foo`.`bar` = 'bbb' OR `foo`.`bar` = 'aaa')"
-             (core/to-pseudo-sql (cmp/compose "OR" eqa eqb eqa) my-db))))
+             (sql (cmp/compose "OR" eqa eqb eqa)))))
 
     (testing "composing with AND"
       (is (= "`foo`.`bar` = 'aaa'"
-             (core/to-pseudo-sql (cmp/compose "AND" eqa) my-db)))
+             (sql (cmp/compose "AND" eqa))))
       (is (= "`foo`.`bar` = 'aaa' AND `foo`.`bar` = 'bbb'"
-             (core/to-pseudo-sql (cmp/compose "AND" eqa eqb) my-db)))
+             (sql (cmp/compose "AND" eqa eqb))))
       (is (= "`foo`.`bar` = 'aaa' AND `foo`.`bar` = 'bbb' AND `foo`.`bar` = 'aaa'"
-             (core/to-pseudo-sql (cmp/compose "AND" eqa eqb eqa) my-db))))
+             (sql (cmp/compose "AND" eqa eqb eqa)))))
+
+    (testing "AND/OR with nil"
+      (is (nil? (cmp/compose "OR")))
+      (is (= "(`foo`.`bar` = 'aaa')" (sql (cmp/compose "OR" nil eqa)))))
 
     (testing "composing with NOT"
       (is (= "NOT(`foo`.`bar` = 'aaa')"
-             (core/to-pseudo-sql (cmp/not eqa) my-db))))))
+             (sql (cmp/not eqa)))))))
