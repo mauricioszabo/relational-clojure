@@ -6,20 +6,20 @@
     (fn [db]
       (update-in (or db) [0] #(str "(" % ")")))))
 
+(defrecord AndOr [composition attrs]
+  c/IPartial
+  (partial-fn [this]
+    (case composition
+      "OR" (create-or attrs)
+      "AND" (apply c/combine-partials-with (cons " AND " attrs)))))
+
 (defn compose [composition & attrs-with-nil]
   (let [attrs (remove nil? attrs-with-nil)]
     (when (> (count attrs) 0)
-      (case composition
-        "OR" (reify c/IPartial
-               (partial-fn [this] (create-or attrs)))
-        "AND" (reify c/IPartial
-                (partial-fn [this]
-                  (apply c/combine-partials-with (cons " AND " attrs))))))))
+      (->AndOr composition attrs))))
 
-(defn not [rel]
-  (reify c/IPartial
-    (partial-fn [this]
-      (fn [db]
-        (update-in ((c/partial-fn rel) db)
-                   [0]
-                   #(str "NOT(" % ")"))))))
+(defrecord Not [rel]
+  c/IPartial
+  (partial-fn [this]
+    (fn [db]
+      (update-in ((c/partial-fn rel) db) [0] #(str "NOT(" % ")")))))

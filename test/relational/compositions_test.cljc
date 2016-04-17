@@ -33,4 +33,6 @@
 
     (testing "composing with NOT"
       (is (= "NOT(`foo`.`bar` = 'aaa')"
-             (sql (cmp/not eqa)))))))
+             (sql (cmp/->Not eqa)))))))
+
+(run-tests)
