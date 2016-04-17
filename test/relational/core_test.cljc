@@ -16,5 +16,3 @@
     (testing "combining partials"
       (is (= ["a = ? OR b = ?", [10, "it's me"]]
              ((combine-partials-with " OR " num-partial str-partial) db))))))
-
-(run-tests)
