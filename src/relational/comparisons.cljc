@@ -25,13 +25,17 @@
 (defn is-null [attr] (->Is attr "NULL"))
 (defn is-not-null [attr] (->Is attr "NOT NULL"))
 
-(defrecord InSeq [attribute sequence]
+(defrecord SeqOp [op attribute sequence]
   IPartial
   (partial-fn [this]
-    (let [seq-str (str "(" (join "," (repeat (count sequence) "?")) ")")
+    (let [op (str " " op " ")
+          seq-str (str "(" (join "," (repeat (count sequence) "?")) ")")
           f (fn [db] [seq-str sequence])]
-      (combine-partials-with " IN " attribute f))))
+      (combine-partials-with op attribute f))))
 
 (defn in [attribute seq-or-sql]
-  (->InSeq attribute seq-or-sql))
+  (->SeqOp "IN" attribute seq-or-sql))
+
+(defn not-in [attribute seq-or-sql]
+  (->SeqOp "NOT IN" attribute seq-or-sql))
 

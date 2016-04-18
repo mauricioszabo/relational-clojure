@@ -25,4 +25,6 @@
 
     (testing "comparing with IN or NOT IN"
       (is (= "`foo`.`bar` IN (1,2,3,4)"
-             (sql (c/in bar [1 2 3 4])))))))
+             (sql (c/in bar [1 2 3 4]))))
+      (is (= "`foo`.`bar` NOT IN (1,2,3,4)"
+             (sql (c/not-in bar [1 2 3 4])))))))
