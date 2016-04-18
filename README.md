@@ -63,12 +63,10 @@ When we run this function, it'll return a tuple (a vector with 2 positions) - a 
 
 (def p (partial-fn q))
 
-; => ["SELECT `foo`.`bar` FROM `foo` WHERE `foo`.`bar` = ?"
-      ["baz"]]
+; => ["SELECT `foo`.`bar` FROM `foo` WHERE `foo`.`bar` = ?" ["baz"]]
 (p mysql)
 
-; => ["SELECT \"foo\".\"bar\" FROM \"foo\" WHERE \"foo\".\"bar\" = ?"
-      ["baz"]]
+; => ["SELECT \"foo\".\"bar\" FROM \"foo\" WHERE \"foo\".\"bar\" = ?" ["baz"]]
 (p pg)
 ```
 
