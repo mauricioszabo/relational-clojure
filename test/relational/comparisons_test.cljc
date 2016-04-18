@@ -21,4 +21,8 @@
     (testing "comparision with multiple arity"
       (is (nil? (c/comparison "=")))
       (is (= "`foo`.`foo` = `foo`.`bar` AND `foo`.`bar` = 'quox'"
-             (sql (c/comparison "=" foo bar "quox")))))))
+             (sql (c/comparison "=" foo bar "quox")))))
+
+    (testing "comparing with IN or NOT IN"
+      (is (= "`foo`.`bar` IN (1,2,3,4)"
+             (sql (c/in bar [1 2 3 4])))))))

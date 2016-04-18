@@ -17,7 +17,7 @@
     (let [first-partial-fn (partial-fn first-partial)
           seed (first-partial-fn db)]
       (->> partials
-           (map #((partial-fn %) db))
+           (map #((if (fn? %) % (partial-fn %)) db))
            (reduce (partial reduce-partial join-str) seed)))))
 
 
