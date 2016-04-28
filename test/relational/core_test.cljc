@@ -20,5 +20,3 @@
              ((combine-partials-with " OR "
                                      num-partial
                                      (partial-fn str-partial)) db))))))
-
-(run-tests)

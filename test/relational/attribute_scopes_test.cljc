@@ -8,9 +8,7 @@
         db {:adapter :sqlite3}]
 
     (testing "escaping tables"
-      (are [sql name adapter] (= sql (core/to-pseudo-sql (table/->Table name)
+      (are [sql name adapter] (= sql (core/to-pseudo-sql (table/table name)
                                                          {:adapter adapter}))
         "\"foo\"" "foo" :sqlite3
         "`foo`" "foo" :mysql))))
-
-(run-tests)

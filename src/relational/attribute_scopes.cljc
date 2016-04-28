@@ -6,3 +6,4 @@
   c/IPartial
   (partial-fn [this] (fn [db] [(escape-attr-name db (:name this)) nil])))
 
+(defn table [name] (->Table name))
