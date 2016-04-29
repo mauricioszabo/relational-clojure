@@ -16,6 +16,13 @@
                    (map #(apply ->Comparison comparison %)))]
     (apply compose "AND" pairs)))
 
+(defn = [ & attributes] (apply comparison "=" attributes))
+(defn not= [ & attributes] (apply comparison "!=" attributes))
+(defn > [ & attributes] (apply comparison ">" attributes))
+(defn < [ & attributes] (apply comparison "<" attributes))
+(defn >= [ & attributes] (apply comparison ">=" attributes))
+(defn <= [ & attributes] (apply comparison "<=" attributes))
+
 (defrecord Is [attribute what]
   IPartial
   (partial-fn [this]
@@ -39,3 +46,8 @@
 (defn not-in [attribute seq-or-sql]
   (->SeqOp "NOT IN" attribute seq-or-sql))
 
+(defn == [attr elem]
+  (condp #(%1 %2) elem
+    coll? (if (empty? elem) (is-null attr) (in attr elem))
+    nil? (is-null attr)
+    (comparison "=" attr elem)))

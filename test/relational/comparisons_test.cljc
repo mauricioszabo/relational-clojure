@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [relational.comparisons :as c]
             [relational.selectables :as s]
+            [relational.helpers :refer [is-sql]]
             [relational.core :refer [to-pseudo-sql]]))
 
 (deftest comparisons
@@ -12,7 +13,10 @@
     (testing "equality and difference comparisons"
       (is (= "`foo`.`bar` = 'quox'" (sql (c/comparison "=" bar "quox"))))
       (is (= "`foo`.`foo` = `foo`.`bar`" (sql (c/comparison "=" foo bar))))
-      (is (= "`foo`.`foo` != `foo`.`bar`" (sql (c/comparison "!=" foo bar)))))
+      (is (= "`foo`.`foo` != `foo`.`bar`" (sql (c/comparison "!=" foo bar))))
+
+      (is (= "`foo`.`foo` = `foo`.`bar`" (sql (c/= foo bar))))
+      (is (= "`foo`.`foo` != `foo`.`bar`" (sql (c/not= foo bar)))))
 
     (testing "comparission with nil"
       (is (= "`foo`.`bar` IS NULL" (sql (c/is-null bar))))
@@ -27,4 +31,10 @@
       (is (= "`foo`.`bar` IN (1,2,3,4)"
              (sql (c/in bar [1 2 3 4]))))
       (is (= "`foo`.`bar` NOT IN (1,2,3,4)"
-             (sql (c/not-in bar [1 2 3 4])))))))
+             (sql (c/not-in bar [1 2 3 4])))))
+
+    (testing "comparision with multi-operator"
+      (is-sql "`foo`.`bar` IN (1,2,3,4)" (c/== bar [1 2 3 4]))
+      (is-sql "`foo`.`bar` IS NULL" (c/== bar nil))
+      (is-sql "`foo`.`bar` IS NULL" (c/== bar []))
+      (is-sql "`foo`.`bar` = 200" (c/== bar 200)))))
