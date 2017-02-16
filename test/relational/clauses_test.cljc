@@ -24,11 +24,29 @@
     (is-sql "" (clauses/where nil))
     (is-sql "" (clauses/having nil))
 
-    (is-sql "WHERE `users`.`id` IS NULL" (clauses/where
-                                           (c/is-null (s/attribute "users", "id"))))
-    (is-sql "HAVING `users`.`id` IS NULL" (clauses/having
-                                            (c/is-null (s/attribute "users", "id")))))
+    (is-sql "WHERE `users`.`id` IS NULL"
+            (clauses/where (c/is-null (s/attribute "users", "id"))))
+    (is-sql "HAVING `users`.`id` IS NULL"
+            (clauses/having (c/is-null (s/attribute "users", "id")))))
 
   (testing "GROUP BY"
     (is-sql "" (clauses/group-by))
-    (is-sql "GROUP BY `users`.`id`" (clauses/group-by (s/attribute "users" "id")))))
+    (is-sql "GROUP BY `users`.`id`" (clauses/group-by (s/attribute "users" "id"))))
+
+  (testing "ORDER BY"
+    (is-sql "" (clauses/order-by))
+    (is-sql "ORDER BY `users`.`id`" (clauses/order-by (s/attribute "users" "id"))))
+
+  (testing "JOIN clauses"
+    (let [foo (t/table "foo")
+          bar (s/attribute "foo" "bar")
+          id (s/attribute "bar" "id")
+          comp (c/comparison "=" bar id)]
+      (is-sql "" (clauses/inner-join foo nil))
+      (is-sql "INNER JOIN `foo` ON `foo`.`bar` = `bar`.`id`" (clauses/inner-join foo comp))
+      (is-sql "LEFT JOIN `foo` ON `foo`.`bar` = `bar`.`id`" (clauses/left-join foo comp))
+      (is-sql "RIGHT JOIN `foo` ON `foo`.`bar` = `bar`.`id`" (clauses/right-join foo comp))))
+
+  (testing "Full Select"
+    (is-sql "SELECT 'users'" (clauses/query :select ["users"]))
+    (is-sql "SELECT `users`.`id`" (clauses/query :select [:users.id]))))
