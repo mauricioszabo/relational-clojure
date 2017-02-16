@@ -1,6 +1,5 @@
 (ns relational.comparisons-test
-  (:require [clojure.test :refer :all]
-            [midje.sweet :refer :all]
+  (:require [midje.sweet :refer :all]
             [relational.comparisons :as c]
             [relational.selectables :as s]
             [relational.helpers :refer [is-sql sql]]
