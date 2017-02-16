@@ -1,4 +1,5 @@
 (ns relational.comparisons
+  (:refer-clojure :exclude [= not= > < >= <=])
   (:require [relational.core :refer [IPartial combine-partials-with partial-fn] :as c]
             [relational.selectables :refer [literal]]
             [relational.compositions :refer [compose]]
@@ -46,7 +47,7 @@
 (defn not-in [attribute seq-or-sql]
   (->SeqOp "NOT IN" attribute seq-or-sql))
 
-(defn == [attr elem]
+(defn = [attr elem]
   (condp #(%1 %2) elem
     coll? (if (empty? elem) (is-null attr) (in attr elem))
     nil? (is-null attr)
