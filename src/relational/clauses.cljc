@@ -1,4 +1,5 @@
 (ns relational.clauses
+  (:refer-clojure :exclude [distinct group-by])
   (:require [relational.core :refer [IPartial combine-partials-with partial-fn]]
             [relational.selectables :as s]))
 
@@ -58,3 +59,34 @@
 
 (defn group-by [ & partials]
   (if (empty? partials) empty-clause (->GroupBy partials)))
+
+(defrecord OrderBy [partials]
+  IPartial
+  (partial-fn [_]
+    (add-prefix-to-list "ORDER BY " partials)))
+
+(defn order-by [ & partials]
+  (if (empty? partials) empty-clause (->OrderBy partials)))
+
+(defrecord Join [kind table-like condition]
+  IPartial
+  (partial-fn [_]
+    (add-prefix kind
+                (combine-partials-with " ON " table-like condition))))
+
+(defn inner-join [table-like condition]
+  (if (nil? condition) empty-clause (->Join "INNER JOIN " table-like condition)))
+
+(defn left-join [table-like condition]
+  (if (nil? condition) empty-clause (->Join "LEFT JOIN " table-like condition)))
+
+(defn right-join [table-like condition]
+  (if (nil? condition) empty-clause (->Join "RIGHT JOIN " table-like condition)))
+
+(defrecord FullSelect [select-c from-c where-c joins-c group-by-c having-c order-c limit-c offset-c]
+  IPartial
+  (partial-fn [_]
+    (combine-partials-with " " (apply select select-c))))
+
+(defn query [ & {:keys [select from where join group having order limit offset]}]
+  (->FullSelect select from where join group having order limit offset))

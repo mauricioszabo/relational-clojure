@@ -1,5 +1,5 @@
 (ns relational.core
-  (:require [clojure.string :refer [replace-first replace]]))
+  (:require [clojure.string :as str]))
 
 (defmacro db-for [ db-name & {:keys [adapter] :as params}]
   `(def ~db-name ~params))
@@ -24,9 +24,9 @@
 (defn- reduce-attr [sql attr]
   (let [string (cond
                  (number? attr) (str attr)
-                 (string? attr) (str "'" (replace attr #"'" "''") "'")
+                 (string? attr) (str "'" (str/replace attr #"'" "''") "'")
                  :else (str "\"" attr "\""))]
-    (replace-first sql #"\?" string)))
+    (str/replace-first sql #"\?" string)))
 
 (defn to-pseudo-sql [partial db]
   (let [partial-fn (partial-fn partial)

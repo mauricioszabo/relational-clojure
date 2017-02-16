@@ -1,8 +1,10 @@
 (ns relational.comparisons
+  (:refer-clojure :exclude [= not= > < >= <= nil? ->])
   (:require [relational.core :refer [IPartial combine-partials-with partial-fn] :as c]
             [relational.selectables :refer [literal]]
             [relational.compositions :refer [compose]]
-            [clojure.string :refer [join]]))
+            [clojure.string :refer [join]]
+            [clojure.core :as core]))
 
 (defrecord Comparison [comparison a1 a2]
   IPartial
@@ -29,8 +31,8 @@
     (fn [db]
       (update-in ((partial-fn attribute) db) [0] str " IS " what))))
 
-(defn is-null [attr] (->Is attr "NULL"))
-(defn is-not-null [attr] (->Is attr "NOT NULL"))
+(defn nil? [attr] (->Is attr "NULL"))
+(defn not-nil? [attr] (->Is attr "NOT NULL"))
 
 (defrecord SeqOp [op attribute sequence]
   IPartial
@@ -46,8 +48,8 @@
 (defn not-in [attribute seq-or-sql]
   (->SeqOp "NOT IN" attribute seq-or-sql))
 
-(defn == [attr elem]
-  (condp #(%1 %2) elem
-    coll? (if (empty? elem) (is-null attr) (in attr elem))
-    nil? (is-null attr)
-    (comparison "=" attr elem)))
+(defn -> [attribute element]
+  (condp #(%1 %2) element
+    coll? (if (empty? element) (nil? attribute) (in attribute element))
+    core/nil? (nil? attribute)
+    (comparison "=" attribute element)))
