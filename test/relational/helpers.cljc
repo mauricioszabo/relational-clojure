@@ -1,5 +1,6 @@
 (ns relational.helpers
   (:require [relational.core :refer [to-pseudo-sql]]
+            [midje.checkers :as checkers]
             [clojure.test :refer [is]]))
 
 (defn is-sql [sql partial]
@@ -7,6 +8,6 @@
     (is (= sql (sql-fn partial)))))
 
 (defn sql [sql]
-  (fn [partial]
+  (checkers/chatty-checker [partial]
     (= sql
        (to-pseudo-sql partial {:adapter :mysql}))))
