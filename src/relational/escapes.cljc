@@ -8,6 +8,9 @@
        (str/replace name #"`" "``")
        "`"))
 
+(defmethod escape-attr-name :mssql [db name]
+  (str "[" name "]"))
+
 (defmethod escape-attr-name :default [db name]
   (str \"
        (str/replace name #"\"" "\"\"")
