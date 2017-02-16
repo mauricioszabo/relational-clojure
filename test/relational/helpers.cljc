@@ -5,3 +5,8 @@
 (defn is-sql [sql partial]
   (let [sql-fn #(to-pseudo-sql % {:adapter :mysql})]
     (is (= sql (sql-fn partial)))))
+
+(defn sql [sql]
+  (fn [partial]
+    (= sql
+       (to-pseudo-sql partial {:adapter :mysql}))))
