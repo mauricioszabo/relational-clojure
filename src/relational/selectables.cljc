@@ -19,7 +19,15 @@
   (partial-fn [_] (partial-for-attr table name))
 
   ISelectable
-  (select-partial-fn [this] (c/partial-fn this)))
+  (select-partial-fn [this] (c/partial-fn this))
+
+  alias/IAlias
+  (alias [this alias-name]
+    (reify c/IPartial
+      (partial-fn [_]
+        (fn [db] (let [[sql attrs] ((partial-for-attr table name) db)]
+                   [(str sql " " alias-name) attrs]))))))
+
 
 (defrecord Literal [attr]
   c/IPartial

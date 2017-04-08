@@ -28,4 +28,7 @@
     (attr/attribute "foo" "*") => (sql "`foo`.*")
     (attr/attribute "foo" "bar") => (sql "`foo`.`bar`")
     (attr/literal (attr/attribute "foo" "bar")) => (sql "`foo`.`bar`")
-    (attr/attribute (scope/table "foo") "bar") => (sql "`foo`.`bar`")))
+    (attr/attribute (scope/table "foo") "bar") => (sql "`foo`.`bar`")
+
+    (alias/alias (attr/attribute "foo" "bar") "q")
+    => (sql "`foo`.`bar` q")))
