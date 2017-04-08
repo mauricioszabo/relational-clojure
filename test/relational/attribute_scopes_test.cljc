@@ -1,14 +1,17 @@
 (ns relational.attribute-scopes-test
-  (:require [clojure.test :refer :all]
+  (:require [midje.sweet :refer :all]
+            [relational.helpers :as h]
             [relational.core :as core]
+            [relational.alias :as alias]
             [relational.attribute-scopes :as table]))
 
-(deftest tables
+(fact "escapes tables"
   (let [my-db {:adapter :mysql}
-        db {:adapter :sqlite3}]
+        db {:adapter :sqlite3}
+        sql-for-table #(core/to-pseudo-sql (table/table %1) %2)]
+    (sql-for-table "foo" my-db) => "`foo`"
+    (sql-for-table "foo" db) => "\"foo\""))
 
-    (testing "escaping tables"
-      (are [sql name adapter] (= sql (core/to-pseudo-sql (table/table name)
-                                                         {:adapter adapter}))
-        "\"foo\"" "foo" :sqlite3
-        "`foo`" "foo" :mysql))))
+(fact "aliases tables"
+  (alias/alias (table/table "table") "alias")
+  => (h/sql "`table` alias"))
