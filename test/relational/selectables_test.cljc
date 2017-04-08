@@ -1,7 +1,11 @@
 (ns relational.selectables-test
   (:require [clojure.test :refer :all]
+            [midje.sweet :refer :all]
+            [relational.helpers :refer [sql]]
+            [relational.alias :as alias]
             [relational.core :as core]
-            [relational.selectables :as attr]))
+            [relational.selectables :as attr]
+            [relational.attribute-scopes :as scope]))
 
 (deftest selectables
   (let [my-db {:adapter :mysql}
@@ -12,14 +16,16 @@
                                              (attr/attribute table name)
                                              {:adapter adapter}))
         "\"foo\".\"bar\"" "foo" "bar" :sqlite3
-        "`foo`.`bar`" "foo" "bar" :mysql))
+        "`foo`.`bar`" "foo" "bar" :mysql))))
 
-    (testing "STAR attributes"
-      (is (= "*" (core/to-pseudo-sql attr/all my-db)))
-      (is (= "`foo`.*" (core/to-pseudo-sql (attr/attribute "foo" "*") my-db))))
+(facts "about attributes"
+  (fact "escapes literal attributes"
+    (attr/literal "foo") => (sql "'foo'")
+    (alias/alias (attr/literal "foo") "bar") => (sql "'foo' bar"))
 
-    (testing "literal attributes like strings, numbers"
-      (is (= "'foo'" (core/to-pseudo-sql (attr/literal "foo") my-db)))
-      (is (= "`foo`.`bar`" (core/to-pseudo-sql
-                             (attr/literal (attr/attribute "foo" "bar"))
-                             my-db))))))
+  (fact "escapes attributes"
+    attr/all => (sql "*")
+    (attr/attribute "foo" "*") => (sql "`foo`.*")
+    (attr/attribute "foo" "bar") => (sql "`foo`.`bar`")
+    (attr/literal (attr/attribute "foo" "bar")) => (sql "`foo`.`bar`")
+    (attr/attribute (scope/table "foo") "bar") => (sql "`foo`.`bar`")))
