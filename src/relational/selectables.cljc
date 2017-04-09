@@ -14,6 +14,13 @@
           my-sql (if (= name "*") "*" (escape-attr-name db name))]
       [(str t-sql "." my-sql) t-attrs])))
 
+(defrecord AliasedAttribute [attribute alias-name]
+  c/IPartial
+  (partial-fn [_]
+    (fn [db]
+      (let [[sql attrs] ((c/partial-fn attribute) db)]
+        [(str sql " " alias-name) attrs]))))
+
 (defrecord Attribute [table name]
   c/IPartial
   (partial-fn [_] (partial-for-attr table name))
@@ -22,11 +29,7 @@
   (select-partial-fn [this] (c/partial-fn this))
 
   alias/IAlias
-  (alias [this alias-name]
-    (reify c/IPartial
-      (partial-fn [_]
-        (fn [db] (let [[sql attrs] ((partial-for-attr table name) db)]
-                   [(str sql " " alias-name) attrs]))))))
+  (alias [this alias-name] (->AliasedAttribute this alias-name)))
 
 
 (defrecord Literal [attr]
@@ -37,8 +40,7 @@
   (select-partial-fn [this] (c/partial-fn this))
 
   alias/IAlias
-  (alias [this name] (reify c/IPartial
-                       (partial-fn [_] (fn [_] [(str "? " name) [attr]])))))
+  (alias [this alias-name] (->AliasedAttribute this alias-name)))
 
 (defn attribute [table-name attr-name]
   (if (instance? Table table-name)
