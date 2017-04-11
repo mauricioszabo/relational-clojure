@@ -2,7 +2,7 @@
   (:require [relational.core :as c]))
 
 (defn- create-or [args]
-  (let [or (apply c/combine-partials-with (cons " OR " args))]
+  (let [or (c/combine-partials-with " OR " args)]
     (fn [db]
       (update-in (or db) [0] #(str "(" % ")")))))
 
@@ -11,7 +11,7 @@
   (partial-fn [this]
     (case composition
       "OR" (create-or attrs)
-      "AND" (apply c/combine-partials-with (cons " AND " attrs)))))
+      "AND" (c/combine-partials-with " AND " attrs))))
 
 (defn compose [composition & attrs-with-nil]
   (let [attrs (remove nil? attrs-with-nil)]

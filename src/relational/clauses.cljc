@@ -8,7 +8,7 @@
     (update-in (partial db) [0] #(str prefix %))))
 
 (defn- add-prefix-to-list [prefix list]
-  (add-prefix prefix (apply combine-partials-with ", " list)))
+  (add-prefix prefix (combine-partials-with ", " list)))
 
 (defrecord Select [distinct? attributes]
   IPartial

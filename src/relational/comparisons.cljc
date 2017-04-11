@@ -9,7 +9,7 @@
 (defrecord Comparison [comparison a1 a2]
   IPartial
   (partial-fn [this]
-    (combine-partials-with (str " " comparison " ") (literal a1) (literal a2))))
+    (combine-partials-with (str " " comparison " ") [(literal a1) (literal a2)])))
 
 (defn comparison [comparison & attributes]
   (let [comb (str " " comparison " ")
@@ -40,7 +40,7 @@
     (let [op (str " " op " ")
           seq-str (str "(" (join "," (repeat (count sequence) "?")) ")")
           f (fn [db] [seq-str sequence])]
-      (combine-partials-with op attribute f))))
+      (combine-partials-with op [attribute f]))))
 
 (defn in [attribute seq-or-sql]
   (->SeqOp "IN" attribute seq-or-sql))

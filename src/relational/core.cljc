@@ -12,9 +12,10 @@
 (defn- reduce-partial [join-str [first-sql first-attrs] [second-sql second-attrs]]
   [(str first-sql join-str second-sql), (vec (concat first-attrs second-attrs))])
 
-(defn combine-partials-with [join-str first-partial & partials]
+(defn combine-partials-with [join-str partials]
   (fn [db]
-    (let [first-partial-fn (partial-fn first-partial)
+    (let [[first-partial & partials] partials
+          first-partial-fn (partial-fn first-partial)
           seed (first-partial-fn db)]
       (->> partials
            (map #((if (fn? %) % (partial-fn %)) db))
