@@ -72,7 +72,7 @@
   IPartial
   (partial-fn [_]
     (add-prefix kind
-                (combine-partials-with " ON " table-like condition))))
+                (combine-partials-with " ON " [table-like condition]))))
 
 (defn inner-join [table-like condition]
   (if (nil? condition) empty-clause (->Join "INNER JOIN " table-like condition)))
@@ -86,7 +86,7 @@
 (defrecord FullSelect [select-c from-c where-c joins-c group-by-c having-c order-c limit-c offset-c]
   IPartial
   (partial-fn [_]
-    (combine-partials-with " " (apply select select-c))))
+    (combine-partials-with " " [(apply select select-c)])))
 
 (defn query [ & {:keys [select from where join group having order limit offset]}]
   (->FullSelect select from where join group having order limit offset))
