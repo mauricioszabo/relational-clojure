@@ -1,7 +1,7 @@
 (ns relational.clauses
   (:refer-clojure :exclude [distinct group-by])
   (:require [relational.core :refer [IPartial combine-partials-with partial-fn]]
-            [relational.selectables :as s]))
+            [relational.selectables :as selectables]))
 
 (defn- add-prefix [prefix partial]
   (fn [db]
@@ -19,13 +19,13 @@
 
 (defn select [ & attributes]
   (if (empty? attributes)
-    (->Select false [s/all])
-    (->Select false (map s/literal attributes))))
+    (->Select false [selectables/all])
+    (->Select false (map selectables/literal attributes))))
 
 (defn distinct [ & attributes]
   (if (empty? attributes)
-    (->Select true [s/all])
-    (->Select true (map s/literal attributes))))
+    (->Select true [selectables/all])
+    (->Select true (map selectables/literal attributes))))
 
 (defrecord EmptyClause []
   IPartial
@@ -83,10 +83,13 @@
 (defn right-join [table-like condition]
   (if (nil? condition) empty-clause (->Join "RIGHT JOIN " table-like condition)))
 
-(defrecord FullSelect [select-c from-c where-c joins-c group-by-c having-c order-c limit-c offset-c]
+(defrecord FullSelect [select-c from-c where-c joins-c
+                       group-by-c having-c order-c limit-c offset-c]
   IPartial
   (partial-fn [_]
-    (combine-partials-with " " [(apply select select-c)])))
+    (let [all-clauses [(apply select select-c)
+                       (apply from from-c)]]
+      (combine-partials-with " " all-clauses))))
 
 (defn query [ & {:keys [select from where join group having order limit offset]}]
   (->FullSelect select from where join group having order limit offset))

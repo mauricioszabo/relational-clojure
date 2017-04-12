@@ -1,52 +1,63 @@
 (ns relational.clauses-test
   (:require [clojure.test :refer :all]
+            [midje.sweet :refer :all]
             [relational.clauses :as clauses]
             [relational.comparisons :as c]
             [relational.selectables :as s]
-            [relational.helpers :refer [is-sql]]
+            [relational.helpers :refer [is-sql sql]]
             [relational.attribute-scopes :as t]))
 
-(deftest sql-clauses
-  (testing "SELECTing attributes"
-    (is-sql "SELECT *" (clauses/select))
+(def foo (t/table "foo"))
+(def bar (s/attribute "foo" "bar"))
+(def id (s/attribute "bar" "id"))
+(def eq (c/comparison "=" bar id))
 
-    (is-sql "SELECT `foo`.`bar`, `foo`.`baz`"
-            (clauses/select (s/attribute "foo" "bar") (s/attribute "foo" "baz")))
+(facts "about query clauses"
+  (fact "can SELECT attributes"
+    (clauses/select) => (sql "SELECT *")
+    (clauses/select (s/attribute "foo" "bar") (s/attribute "foo" "baz"))
+    => (sql "SELECT `foo`.`bar`, `foo`.`baz`")
+    (clauses/distinct (s/attribute "foo" "bar") (s/attribute "foo" "baz"))
+    => (sql "SELECT DISTINCT `foo`.`bar`, `foo`.`baz`"))
 
-    (is-sql "SELECT DISTINCT `foo`.`bar`, `foo`.`baz`"
-            (clauses/distinct (s/attribute "foo" "bar") (s/attribute "foo" "baz"))))
+  (fact "can choose what table we select FROM"
+    (clauses/from) => (sql "")
+    (clauses/from (t/table "foos")) => (sql "FROM `foos`"))
 
-  (testing "FROM clause"
-    (is-sql "" (clauses/from))
-    (is-sql "FROM `foos`" (clauses/from (t/table "foos"))))
+  (fact "can filter with WHERE and HAVING"
+    (clauses/where nil) => (sql "")
+    (clauses/having nil) => (sql "")
 
-  (testing "WHERE and HAVING"
-    (is-sql "" (clauses/where nil))
-    (is-sql "" (clauses/having nil))
+    (clauses/where (c/nil? (s/attribute "users", "id")))
+    => (sql "WHERE `users`.`id` IS NULL")
 
-    (is-sql "WHERE `users`.`id` IS NULL"
-            (clauses/where (c/is-null (s/attribute "users", "id"))))
-    (is-sql "HAVING `users`.`id` IS NULL"
-            (clauses/having (c/is-null (s/attribute "users", "id")))))
+    (clauses/having (c/nil? (s/attribute "users", "id")))
+    => (sql "HAVING `users`.`id` IS NULL"))
 
-  (testing "GROUP BY"
-    (is-sql "" (clauses/group-by))
-    (is-sql "GROUP BY `users`.`id`" (clauses/group-by (s/attribute "users" "id"))))
+  (fact "GROUPs BY"
+    (clauses/group-by) => (sql "")
+    (clauses/group-by (s/attribute "users" "id")) => (sql "GROUP BY `users`.`id`"))
 
-  (testing "ORDER BY"
-    (is-sql "" (clauses/order-by))
-    (is-sql "ORDER BY `users`.`id`" (clauses/order-by (s/attribute "users" "id"))))
+  (fact "ORDERs BY"
+    (clauses/order-by) => (sql "")
+    (clauses/order-by (s/attribute "users" "id")) => (sql "ORDER BY `users`.`id`"))
 
-  (testing "JOIN clauses"
-    (let [foo (t/table "foo")
-          bar (s/attribute "foo" "bar")
-          id (s/attribute "bar" "id")
-          comp (c/comparison "=" bar id)]
-      (is-sql "" (clauses/inner-join foo nil))
-      (is-sql "INNER JOIN `foo` ON `foo`.`bar` = `bar`.`id`" (clauses/inner-join foo comp))
-      (is-sql "LEFT JOIN `foo` ON `foo`.`bar` = `bar`.`id`" (clauses/left-join foo comp))
-      (is-sql "RIGHT JOIN `foo` ON `foo`.`bar` = `bar`.`id`" (clauses/right-join foo comp))))
+  (fact "JOINs with other tables"
+    (clauses/inner-join foo nil) => (sql "")
+    (clauses/inner-join foo eq)
+    => (sql "INNER JOIN `foo` ON `foo`.`bar` = `bar`.`id`")
+    (clauses/left-join foo eq)
+    => (sql "LEFT JOIN `foo` ON `foo`.`bar` = `bar`.`id`")
+    (clauses/right-join foo eq)
+    => (sql "RIGHT JOIN `foo` ON `foo`.`bar` = `bar`.`id`")))
 
-  (testing "Full Select"
-    (is-sql "SELECT 'users'" (clauses/query :select ["users"]))
-    (is-sql "SELECT `users`.`id`" (clauses/query :select [:users.id]))))
+(facts "when generating a full query"
+  (fact "generates a SELECT"
+    (clauses/query :select ["users"]) => (sql "SELECT 'users'")
+    (clauses/query :select [bar])
+    => (sql "SELECT `foo`.`bar`"))
+
+  (fact "generates a FROM"
+    (clauses/query :select [bar]
+                   :from foo)
+    => (sql "SELECT `foo`.`bar` FROM `foo`")))
