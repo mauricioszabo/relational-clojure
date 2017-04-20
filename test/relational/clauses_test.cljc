@@ -59,5 +59,25 @@
 
   (fact "generates a FROM"
     (clauses/query :select [bar]
-                   :from foo)
-    => (sql "SELECT `foo`.`bar` FROM `foo`")))
+                   :from [foo])
+    => (sql "SELECT `foo`.`bar` FROM `foo`"))
+
+  (fact "generates a WHERE / ORDER"
+    (clauses/query :select [bar] :from [foo]
+                   :where (c/= bar 10)
+                   :order [bar])
+    => (sql (str "SELECT `foo`.`bar` FROM `foo` "
+                 "WHERE `foo`.`bar` = 10   "
+                 "ORDER BY `foo`.`bar`")))
+
+  (fact "generates a GROUP BY / HAVING"
+    (clauses/query :select [bar] :from [foo]
+                   :where (c/= bar 10)
+                   :order [bar]
+                   :group [bar]
+                   :having (c/= bar 20))
+    => (sql (str "SELECT `foo`.`bar` FROM `foo` "
+                 "WHERE `foo`.`bar` = 10 "
+                 "GROUP BY `foo`.`bar` "
+                 "HAVING `foo`.`bar` = 20 "
+                 "ORDER BY `foo`.`bar`"))))

@@ -1,7 +1,8 @@
 (ns relational.clauses
   (:refer-clojure :exclude [distinct group-by])
   (:require [relational.core :refer [IPartial combine-partials-with partial-fn]]
-            [relational.selectables :as selectables]))
+            [relational.selectables :as selectables]
+            [clojure.string :as str]))
 
 (defn- add-prefix [prefix partial]
   (fn [db]
@@ -88,8 +89,15 @@
   IPartial
   (partial-fn [_]
     (let [all-clauses [(apply select select-c)
-                       (apply from from-c)]]
-      (combine-partials-with " " all-clauses))))
+                       (apply from from-c)
+                       (where where-c)
+                       (apply group-by group-by-c)
+                       (having having-c)
+                       (apply order-by order-c)]
+
+          combined (combine-partials-with " " all-clauses)]
+      (fn [db]
+        (update (combined db) 0 str/trim)))))
 
 (defn query [ & {:keys [select from where join group having order limit offset]}]
   (->FullSelect select from where join group having order limit offset))
