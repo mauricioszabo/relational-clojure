@@ -31,6 +31,16 @@
   alias/IAlias
   (alias [this alias-name] (->AliasedAttribute this alias-name)))
 
+(defrecord IndeterminateAttribute [name]
+  c/IPartial
+  (partial-fn [_]
+    (fn [db] [(escape-attr-name db name) []]))
+
+  ISelectable
+  (select-partial-fn [this] (c/partial-fn this))
+
+  alias/IAlias
+  (alias [this alias-name] (->AliasedAttribute this alias-name)))
 
 (defrecord Literal [attr]
   c/IPartial
@@ -42,10 +52,12 @@
   alias/IAlias
   (alias [this alias-name] (->AliasedAttribute this alias-name)))
 
-(defn attribute [table-name attr-name]
-  (if (instance? Table table-name)
-    (->Attribute table-name attr-name)
-    (->Attribute (scopes/->Table table-name) attr-name)))
+(defn attribute
+  ([attr-name] (->IndeterminateAttribute attr-name))
+  ([table-name attr-name]
+   (if (instance? Table table-name)
+     (->Attribute table-name attr-name)
+     (->Attribute (scopes/->Table table-name) attr-name))))
 
 (defn literal [attr-or-partial]
   (if (satisfies? c/IPartial attr-or-partial)

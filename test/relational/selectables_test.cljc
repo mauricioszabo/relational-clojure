@@ -25,6 +25,7 @@
 
   (fact "escapes attributes"
     attr/all => (sql "*")
+    (attr/attribute "foo") => (sql "`foo`")
     (attr/attribute "foo" "*") => (sql "`foo`.*")
     (attr/attribute "foo" "bar") => (sql "`foo`.`bar`")
     (attr/literal (attr/attribute "foo" "bar")) => (sql "`foo`.`bar`")
