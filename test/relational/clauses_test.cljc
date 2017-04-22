@@ -67,7 +67,7 @@
                    :where (c/= bar 10)
                    :order [bar])
     => (sql (str "SELECT `foo`.`bar` FROM `foo` "
-                 "WHERE `foo`.`bar` = 10   "
+                 "WHERE `foo`.`bar` = 10 "
                  "ORDER BY `foo`.`bar`")))
 
   (fact "generates a GROUP BY / HAVING"

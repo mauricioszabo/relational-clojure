@@ -87,20 +87,23 @@
 ; TODO: Joins
 ; TODO: Limit
 ; TODO: Offset
-(defrecord FullSelect [select-c from-c where-c joins-c
-                       group-by-c having-c order-c limit-c offset-c]
+(defrecord FullSelect [select from where joins
+                       group having order limit offset]
   IPartial
   (partial-fn [_]
-    (let [all-clauses [(apply select select-c)
-                       (apply from from-c)
-                       (where where-c)
-                       (apply group-by group-by-c)
-                       (having having-c)
-                       (apply order-by order-c)]
+    (let [all-clauses (filter identity [select from where group having order])]
+          ; combined]
+      (combine-partials-with " " all-clauses))))
+      ; (fn [db]
+      ;   (update (combined db) 0 str/trim)))))
 
-          combined (combine-partials-with " " all-clauses)]
-      (fn [db]
-        (update (combined db) 0 str/trim)))))
-
-(defn query [ & {:keys [select from where join group having order limit offset]}]
-  (->FullSelect select from where join group having order limit offset))
+(defn query [ & {:as clauses}]
+  (->FullSelect (some->> clauses :select (apply select))
+                (some->> clauses :from (apply from))
+                (some->> clauses :where where)
+                nil
+                (some->> clauses :group (apply group-by))
+                (some->> clauses :having having)
+                (some->> clauses :order (apply order-by))
+                nil
+                nil))
