@@ -84,6 +84,9 @@
 (defn right-join [table-like condition]
   (if (nil? condition) empty-clause (->Join "RIGHT JOIN " table-like condition)))
 
+; TODO: Joins
+; TODO: Limit
+; TODO: Offset
 (defrecord FullSelect [select-c from-c where-c joins-c
                        group-by-c having-c order-c limit-c offset-c]
   IPartial
