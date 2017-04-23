@@ -10,10 +10,10 @@
 
 (facts "about SQL comparisions"
   (fact "generates equality comparisions"
-    (c/comparison "=" bar "quox") => (sql "`foo`.`bar` = 'quox'")
-    (c/comparison "=" bar "quox") => (sql "`foo`.`bar` = 'quox'")
-    (c/comparison "=" foo bar) => (sql "`foo`.`foo` = `foo`.`bar`")
-    (c/comparison "!=" foo bar) => (sql "`foo`.`foo` != `foo`.`bar`")
+    (c/= bar "quox") => (sql "`foo`.`bar` = 'quox'")
+    (c/= bar "quox") => (sql "`foo`.`bar` = 'quox'")
+    (c/= foo bar) => (sql "`foo`.`foo` = `foo`.`bar`")
+    (c/not= foo bar) => (sql "`foo`.`foo` != `foo`.`bar`")
     (c/= foo bar) => (sql "`foo`.`foo` = `foo`.`bar`")
     (c/not= foo bar) => (sql "`foo`.`foo` != `foo`.`bar`"))
 
@@ -22,8 +22,8 @@
     (c/not-nil? bar) => (sql "`foo`.`bar` IS NOT NULL"))
 
   (fact "compares with multiple arity"
-    (c/comparison "=") => nil?
-    (c/comparison "=" foo bar "quox")
+    (c/=) => nil?
+    (c/= foo bar "quox")
     => (sql "`foo`.`foo` = `foo`.`bar` AND `foo`.`bar` = 'quox'"))
 
   (fact "compares with IN or NOT IN"

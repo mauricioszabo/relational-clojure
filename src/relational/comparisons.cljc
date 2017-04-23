@@ -11,19 +11,19 @@
   (partial-fn [this]
     (combine-partials-with (str " " comparison " ") [(literal a1) (literal a2)])))
 
-(defn comparison [comparison & attributes]
+(defn- comparison [comparison attributes]
   (let [comb (str " " comparison " ")
         pairs (->> attributes
                    (partition 2 1)
                    (map #(apply ->Comparison comparison %)))]
     (apply compose "AND" pairs)))
 
-(defn = [ & attributes] (apply comparison "=" attributes))
-(defn not= [ & attributes] (apply comparison "!=" attributes))
-(defn > [ & attributes] (apply comparison ">" attributes))
-(defn < [ & attributes] (apply comparison "<" attributes))
-(defn >= [ & attributes] (apply comparison ">=" attributes))
-(defn <= [ & attributes] (apply comparison "<=" attributes))
+(defn = [ & attributes] (comparison "=" attributes))
+(defn not= [ & attributes] (comparison "!=" attributes))
+(defn > [ & attributes] (comparison ">" attributes))
+(defn < [ & attributes] (comparison "<" attributes))
+(defn >= [ & attributes] (comparison ">=" attributes))
+(defn <= [ & attributes] (comparison "<=" attributes))
 
 (defrecord Is [attribute what]
   IPartial
@@ -52,4 +52,4 @@
   (condp #(%1 %2) element
     coll? (if (empty? element) (nil? attribute) (in attribute element))
     core/nil? (nil? attribute)
-    (comparison "=" attribute element)))
+    (comparison "=" [attribute element])))
