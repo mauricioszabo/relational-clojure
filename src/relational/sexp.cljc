@@ -14,7 +14,7 @@
   (cond
     (and (coll? sexp) (empty? sexp)) nil
     (nil? sexp) nil
-    :else sexp))
+    :else (selectable/literal sexp)))
 
 (defmethod convert :table [sexp]
   (let [table (scope/table (get-in sexp [:table :name] (:table sexp)))
@@ -37,7 +37,7 @@
   (if-let [comp-fun (get comparisions condition)]
     (apply comp-fun (map #(if (and (coll? %) (symbol? (first %)))
                             (parse-condition %)
-                            (convert %)) 
+                            (convert %))
                          args))
     (throw (ex-info "Not a valid comparision clause" {:comparision condition}))))
 
