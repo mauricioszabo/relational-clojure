@@ -1,6 +1,7 @@
 (ns relational.sexp
   (:require [relational.attribute-scopes :as scope]
             [relational.selectables :as selectable]
+            [relational.comparisons :as comparisions]
             [relational.clauses :as clauses]
             [relational.alias :as alias]))
 
@@ -9,7 +10,11 @@
   (fn [sexp] (first (filter #(get sexp %)
                             [:select :attribute :table]))))
 
-(defmethod convert nil [_])
+(defmethod convert nil [sexp]
+  (cond
+    (and (coll? sexp) (empty? sexp)) nil
+    (nil? sexp) nil
+    :else sexp))
 
 (defmethod convert :table [sexp]
   (let [table (scope/table (get-in sexp [:table :name] (:table sexp)))
@@ -27,14 +32,23 @@
     (cond-> selectable
             alias-name (alias/alias alias-name))))
 
+(def ^:private comparisions (ns-publics 'relational.comparisons))
+(defn- parse-condition [[condition & args]]
+  (if-let [comp-fun (get comparisions condition)]
+    (apply comp-fun (map #(if (and (coll? %) (symbol? (first %)))
+                            (parse-condition %)
+                            (convert %)) 
+                         args))
+    (throw (ex-info "Not a valid comparision clause" {:comparision condition}))))
+
 (defmethod convert :select [sexp]
   (clauses/->FullSelect (->> sexp :select (map convert) (clauses/->Select false))
                         (some->> sexp :from (map convert) clauses/->From)
-                        (some->> sexp :where (map convert))
+                        (some->> sexp :where parse-condition (clauses/->Comparision "WHERE"))
                         ; (->> sexp :joins (map convert) clauses/->Join)
                         nil
                         (some->> sexp :group (map convert) clauses/->GroupBy)
-                        (some->> sexp :having convert)
+                        (some->> sexp :having parse-condition (clauses/->Comparision "HAVING"))
                         (some->> sexp :order (map convert) clauses/->OrderBy)
                         ; (->> sexp :limit (map convert) clauses/->From)
                         nil

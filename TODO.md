@@ -1,4 +1,5 @@
 ## Clauses
+* [ ] AND / OR
 * [ ] SELECT ... FOR UPDATE
 * [ ] More tests with attributes and aliases
 * [ ] Add Joins
@@ -8,7 +9,7 @@
 * [ ] SQL functions
 
 ## Sexp Parser
-* [ ] SEXP parser for WHERE / HAVING
+* [X] SEXP parser for WHERE / HAVING
 * [ ] SEXP parser for SELECT DISTINCT
 * [ ] SEXP parser for SELECT ... FOR UPDATE
 * [ ] SEXP parser for Joins

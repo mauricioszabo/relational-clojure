@@ -30,7 +30,15 @@
 (facts "when generating full queries"
   (fact "will generate a simple query"
     (sexp/convert {:select [{:attribute "bar"}]}) => (sql "SELECT `bar`")
-
     (sexp/convert {:select [{:attribute "bar"}]
                    :from [{:table "foo"}]})
-    => (sql "SELECT `bar` FROM `foo`")))
+    => (sql "SELECT `bar` FROM `foo`"))
+
+  (fact "will parse WHERE / HAVING"
+    (sexp/convert {:select [{:attribute "bar"}] :where ['= {:attribute "id"} 10]})
+    => (sql "SELECT `bar` WHERE `id` = 10")
+    (sexp/convert {:select [{:attribute "bar"}] :having ['= {:attribute "id"} 10]})
+    => (sql "SELECT `bar` HAVING `id` = 10")
+    (sexp/convert {:select [{:attribute "bar"}]
+                   :where ['= ['= {:attribute "id"} 10] "1"]})
+    => (sql "SELECT `bar` WHERE `id` = 10 = '1'")))
