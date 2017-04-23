@@ -10,7 +10,7 @@
 (def foo (t/table "foo"))
 (def bar (s/attribute "foo" "bar"))
 (def id (s/attribute "bar" "id"))
-(def eq (c/comparison "=" bar id))
+(def eq (c/= bar id))
 
 (facts "about query clauses"
   (fact "can SELECT attributes"
